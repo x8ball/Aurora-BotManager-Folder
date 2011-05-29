@@ -1,0 +1,5 @@
+C:\aurorasource\Aurora-Sim\bin\Aurora.BotManager.dll
+C:\aurorasource\Aurora-Sim\bin\Aurora.BotManager.pdb
+C:\aurorasource\Aurora-Sim\Aurora\BotManager\obj\Debug\ResolveAssemblyReference.cache
+C:\aurorasource\Aurora-Sim\Aurora\BotManager\obj\Debug\Aurora.BotManager.dll
+C:\aurorasource\Aurora-Sim\Aurora\BotManager\obj\Debug\Aurora.BotManager.pdb

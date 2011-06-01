@@ -88,6 +88,14 @@ namespace Aurora.BotManager
                 m_currentState = value;
             }
         }
+        public int Health
+        {
+            get { return m_iBotHealth; }
+            set
+            {
+                m_iBotHealth = value;
+            }
+        }
         private RexBotState m_previousState = RexBotState.Idle;
         
         private bool m_autoMove = true;
@@ -134,7 +142,7 @@ namespace Aurora.BotManager
         //<game AI declares>
         public enum AttackingState { Attacking, Defending, Retreating, Waiting }
         public enum EmotionalState { Relaxed, Interested, Jumpy, Agitated, Angry, Enraged, Happy, Smiling, Sad, Scared }
-        private int m_BotHitPoints;
+        private int m_iBotHealth;
         private bool m_bAttack = false;
 
         //Melee Attack Animations: use a list for this
@@ -288,7 +296,7 @@ namespace Aurora.BotManager
             //myBot = new cBot(false);
             //</AIMLBot>
 
-            m_BotHitPoints = 100;
+            m_iBotHealth = 100;
 
         }
 
@@ -1210,7 +1218,10 @@ namespace Aurora.BotManager
                 //now we should run the code to attack the avatar and cause damage
                 //
                 ICombatPresence cp = FollowSP.RequestModuleInterface<ICombatPresence>();
-                if (cp.Health > 9)
+
+                
+
+                if (cp.Health  > 9)
                 {
                     cp.Health = cp.Health - 10;
                     cp.IncurDamage(1, 10, FollowSP.UUID);

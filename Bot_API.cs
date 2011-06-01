@@ -254,11 +254,17 @@ namespace Aurora.BotManager
                 if (sp.Name.ToLower() == sBotName.ToLower())
                 {
                     ICombatPresence cp = sp.RequestModuleInterface<ICombatPresence>();
-                    if (cp.Health > 0)
+                    IRexBot bot = World.RequestModuleInterface<IRexBot>();
+                    bot = (IRexBot)sp.ControllingClient;
+                    int ibothealth = bot.Health;
+                    ibothealth = ibothealth - (int)fdamage;
+
+                    if (ibothealth > 0)
                     {
-                        cp.Health = cp.Health - fdamage;
+                        bot.Health = ibothealth;
+                        cp.Health = (float)ibothealth;
                         cp.IncurDamage(1, fdamage, sp.UUID);
-                        if (cp.Health < 0)
+                        if (ibothealth < 0)
                         {
                             IBotManager manager = World.RequestModuleInterface<IBotManager>();
                             if (manager != null)

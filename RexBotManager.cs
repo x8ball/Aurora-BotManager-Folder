@@ -124,6 +124,7 @@ namespace Aurora.BotManager
             IRexBot bot;
             if (m_bots.TryGetValue(BotID, out bot))
             {
+                StopFollowAvatar(BotID);
                 bot.Die();
             }
         }

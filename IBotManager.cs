@@ -64,6 +64,12 @@ namespace Aurora.BotManager
         void SendChatMessage (int sayType, string message, int channel);
         void SetAttackBotToFollow(string avatarName);
         void Die();
+        int Health
+        {
+            get;
+            set;
+        }
+        
         
     }
 }

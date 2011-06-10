@@ -263,7 +263,7 @@ namespace Aurora.BotManager
                     {
                         bot.Health = ibothealth;
                         cp.Health = (float)ibothealth;
-                        cp.IncurDamage(1, fdamage, sp.UUID);
+                        //cp.IncurDamage(1, fdamage, sp.UUID);
                         if (ibothealth < 0)
                         {
                             IBotManager manager = World.RequestModuleInterface<IBotManager>();

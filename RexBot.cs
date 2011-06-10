@@ -1062,6 +1062,12 @@ namespace Aurora.BotManager
             
         }
 
+        public void SendDialog(string objectname, UUID objectID, UUID ownerID, string ownerFirstName, string ownerLastName, string msg, UUID textureID, int ch,
+                string[] buttonlabels)
+        {
+        }
+
+
         /// <summary>
         /// This is called to make the bot walk nicely around every 100 milliseconds by m_frames timer
         /// </summary>
@@ -1224,13 +1230,15 @@ namespace Aurora.BotManager
                 if (cp.Health  > 9)
                 {
                     cp.Health = cp.Health - 10;
-                    cp.IncurDamage(1, 10, FollowSP.UUID);
+                    //cp.IncurDamage(1, 10, FollowSP.UUID);
+
+                    
                 }
                 else
                 {
                     cp.Health = 0;
                     //at this point the prey avatar should be dead
-                    cp.IncurDamage(1, 100, FollowSP.UUID);
+                    //cp.IncurDamage(1, 100, FollowSP.UUID);
                     m_bAttack = false;
                     State = RexBotState.Idle;
                     m_walkTime.Stop();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors, http://opensimulator.org/
+ * Copyright (c) Contributors, http://aurora-sim.org/
  * See CONTRIBUTORS.TXT for a full list of copyright holders.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the Aurora-Sim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -39,6 +39,10 @@ using OpenSim;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
+//The following is needed for IInventoryServices
+using OpenSim.Services.Interfaces;
+
+
 
 using LSL_Float = Aurora.ScriptEngine.AuroraDotNetEngine.LSL_Types.LSLFloat;
 using LSL_Integer = Aurora.ScriptEngine.AuroraDotNetEngine.LSL_Types.LSLInteger;
@@ -49,7 +53,6 @@ using LSL_String = Aurora.ScriptEngine.AuroraDotNetEngine.LSL_Types.LSLString;
 using LSL_Vector = Aurora.ScriptEngine.AuroraDotNetEngine.LSL_Types.Vector3;
 using Aurora.ScriptEngine.AuroraDotNetEngine.APIs.Interfaces;
 using Aurora.ScriptEngine.AuroraDotNetEngine.Runtime;
-using OpenSim.Services.Interfaces;
 using Aurora.ScriptEngine.AuroraDotNetEngine;
 
 namespace Aurora.BotManager
@@ -140,11 +143,204 @@ namespace Aurora.BotManager
         {
             get { return m_host.ParentEntity.Scene; }
         }
+
+        public string botCreateBot(string FirstName, string LastName, string appearanceToClone, LSL_Vector startPos)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botCreateBot", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager>();
+            if (manager != null)
+                return manager.CreateAvatar (FirstName, LastName, m_host.ParentEntity.Scene, UUID.Parse (appearanceToClone), m_host.OwnerID, new Vector3 ((float)startPos.x, (float)startPos.y, (float)startPos.z)).ToString ();
+            return "";
+        }
+
+        public LSL_Vector botGetWaitingTime (LSL_Integer waitTime)
+        {
+            return new LSL_Vector (waitTime, 0, 0);
+        }
+
+        public void botPauseMovement (string bot)
+        {
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.PauseMovement (UUID.Parse (bot));
+        }
+
+        public void botResumeMovement (string bot)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botResumeMovement", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.ResumeMovement (UUID.Parse (bot));
+        }
+
+        public void botSetShouldFly (string keyOfBot, int ShouldFly)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botSetShouldFly", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+               manager.SetBotShouldFly (UUID.Parse(keyOfBot), ShouldFly == 1);
+        }
+
+        public void botSetMap(string keyOfBot, LSL_List positions, LSL_List movementType, LSL_Integer flags)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botSetMap", m_host, "bot");
+            List<Vector3> PositionsMap = new List<Vector3>();
+            for(int i = 0; i < positions.Length; i++)
+            {
+                LSL_Vector pos = positions.GetVector3Item(i);
+                PositionsMap.Add(new Vector3((float)pos.x, (float)pos.y, (float)pos.z));
+            }
+            List<TravelMode> TravelMap = new List<TravelMode>();
+            for(int i = 0; i < movementType.Length; i++)
+            {
+                LSL_Integer travel = movementType.GetLSLIntegerItem(i);
+                TravelMap.Add((TravelMode)travel.value);
+            }
+
+            IBotManager manager = World.RequestModuleInterface<IBotManager>();
+            if (manager != null)
+                manager.SetBotMap(UUID.Parse(keyOfBot), PositionsMap, TravelMap, flags.value);
+        }
+
+        public void botRemoveBot (string bot)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botRemoveBot", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.RemoveAvatar (UUID.Parse (bot), m_host.ParentEntity.Scene);
+        }
+
+        public void botFollowAvatar (string bot, string avatarName, LSL_Float startFollowDistance, LSL_Float endFollowDistance)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botFollowAvatar", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.FollowAvatar (UUID.Parse (bot), avatarName, (float)startFollowDistance, (float)endFollowDistance);
+        }
+
+        public void botStopFollowAvatar (string bot)
+        {
+           // ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botStopFollowAvatar", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.StopFollowAvatar (UUID.Parse (bot));
+        }
+
+        public void botSetPathMap (string bot, string pathMap, int x, int y, int cornerstoneX, int cornerstoneY)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botSetPathMap", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.ReadMap (UUID.Parse (bot), pathMap, x, y, cornerstoneX, cornerstoneY);
+        }
+
+        public void botFindPath (string bot, LSL_Vector startPos, LSL_Vector endPos)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botFindPath", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.FindPath (UUID.Parse (bot), new Vector3 ((float)startPos.x, (float)startPos.y, (float)startPos.z),
+                    new Vector3 ((float)endPos.x, (float)endPos.y, (float)endPos.z));
+        }
+
+        public void botSendChatMessage (string bot, string message, int channel, int sayType)
+        {
+           // ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botSendChatMessage", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.SendChatMessage (UUID.Parse (bot), message, sayType, channel);
+        }
+
+        //<Christy Lock Code>
+        public void botListenMessage(string fromName, string bot, string message, int sayType, string pos)
+        {
+            //botListenMessage
+            IBotManager manager = World.RequestModuleInterface<IBotManager>();
+            if (manager != null)
+                // manager.SendChatMessage(UUID.Parse(bot), message, sayType);
+                manager.ListenMessage(fromName, UUID.Parse(bot), message, sayType, pos);
+        }
+        public void botTeleportTo(string bot, string pos)
+        {
+            IBotManager manager = World.RequestModuleInterface<IBotManager>();
+            if (manager != null)
+
+                manager.TeleportTo(UUID.Parse(bot), pos);
+        }
+
+        //
+        //</Christy Lock Code>
+
+        public void botTouchObject (string bot, string objectID)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botTouchObject", m_host, "bot");
+            SurfaceTouchEventArgs touchArgs = new SurfaceTouchEventArgs();
+            
+            IScenePresence sp = World.GetScenePresence(UUID.Parse(bot));
+            if(sp == null)
+                return;
+            ISceneChildEntity child = World.GetSceneObjectPart(UUID.Parse(objectID));
+            if(child == null)
+                throw new Exception("Failed to find entity to touch");
+
+            World.EventManager.TriggerObjectGrab (child, child, Vector3.Zero, sp.ControllingClient, touchArgs);
+            World.EventManager.TriggerObjectGrabbing (child, child, Vector3.Zero, sp.ControllingClient, touchArgs);
+            World.EventManager.TriggerObjectDeGrab (child, child, sp.ControllingClient, touchArgs);
+        }
+
+        public void botSitObject (string bot, string objectID, LSL_Vector offset)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botTouchObject", m_host, "bot");
+            IScenePresence sp = World.GetScenePresence (UUID.Parse (bot));
+            if (sp == null)
+                return;
+            ISceneChildEntity child = World.GetSceneObjectPart (UUID.Parse (objectID));
+            if (child == null)
+                throw new Exception ("Failed to find entity to touch");
+
+            sp.HandleAgentRequestSit (sp.ControllingClient, child.UUID, new Vector3((float)offset.x, (float)offset.y, (float)offset.z));
+        }
+
+        public void botStandUp (string bot)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botStandUp", m_host, "bot");
+            botSitObject (bot, UUID.Zero.ToString (), new LSL_Vector ());
+        }
+
+        public void botAddTag (string bot, string tag)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botAddTag", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.AddTagToBot (UUID.Parse (bot), tag);
+        }
+
+        public LSL_List botGetBotsWithTag (string tag)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botGetBotsWithTag", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            List<UUID> bots = new List<UUID> ();
+            if (manager != null)
+                bots = manager.GetBotsWithTag (tag);
+            List<object> b = new List<object> ();
+            foreach(UUID bot in bots)
+                b.Add(bot.ToString());
+
+            return new LSL_List (b);
+        }
+
+        public void botRemoveBotsWithTag (string tag)
+        {
+            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botRemoveBotsWithTag", m_host, "bot");
+            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
+            if (manager != null)
+                manager.RemoveBots (tag);
+        }
         public string botGetLocation(string bot)
         {
-           Vector3 botpos = Vector3.Zero; //set default botpos to zero
-                
-            
+            Vector3 botpos = Vector3.Zero; //set default botpos to zero
+
+
             m_host.ParentEntity.Scene.ForEachScenePresence(delegate(IScenePresence sp)
             {
                 // this should be the bot id
@@ -157,7 +353,6 @@ namespace Aurora.BotManager
 
             return botpos.ToString();
         }
-
         public void botSetState(string bot, string State)
         {
             //this is a test case of being able to get access to a property
@@ -187,7 +382,6 @@ namespace Aurora.BotManager
             //}
 
         }
-
         public string botGetState(string bot)
         {
             return "";
@@ -200,7 +394,7 @@ namespace Aurora.BotManager
             //unknown which would be returned if it was
             //failing. Anyways this is a test case only
             //string strState="unknown";
-            
+
             //        IBotManager manager = World.RequestModuleInterface<IBotManager>();
             //        if (manager != null)
             //        {
@@ -208,7 +402,7 @@ namespace Aurora.BotManager
             //            RexBot rxbot;
             //            rxbot = (RexBot)manager.GetBot(UUID.Parse(bot));
             //            RexBot.RexBotState  st = rxbot.State;
-                 
+
             //            switch (st)
             //            {
             //                case RexBot.RexBotState.Walking:
@@ -227,11 +421,10 @@ namespace Aurora.BotManager
             //            }
 
             //        }
-                
+
             //return strState;
 
         }
-
         public void botAnimate(string bot, string AnimationUUID)
         {
             m_host.ParentEntity.Scene.ForEachScenePresence(delegate(IScenePresence sp)
@@ -239,12 +432,10 @@ namespace Aurora.BotManager
                 // this should be the bot id
                 if (sp.UUID == UUID.Parse(bot))
                 {
-                   sp.Animator.AddAnimation(UUID.Parse(AnimationUUID), UUID.Zero);
+                    sp.Animator.AddAnimation(UUID.Parse(AnimationUUID), UUID.Zero);
                 }
             });
-           
         }
-
         public void botCauseDamage(string sBotName, float fdamage)
         {
 
@@ -254,8 +445,8 @@ namespace Aurora.BotManager
                 if (sp.Name.ToLower() == sBotName.ToLower())
                 {
                     ICombatPresence cp = sp.RequestModuleInterface<ICombatPresence>();
-                    IRexBot bot = World.RequestModuleInterface<IRexBot>();
-                    bot = (IRexBot)sp.ControllingClient;
+                    Bot bot = World.RequestModuleInterface<Bot>();
+                    bot = (Bot)sp.ControllingClient;
                     int ibothealth = bot.Health;
                     ibothealth = ibothealth - (int)fdamage;
 
@@ -286,149 +477,91 @@ namespace Aurora.BotManager
                 }
             });
         }
-
-
-        public string botSpawnAttackBot(string FirstName, string LastName, string appearanceToClone, string AvatarToFollowName)
+        public string botSpawnAttackBot(string FirstName, string LastName, string appearanceToClone, string AvatarToFollowName, string creatorID)
         {
             UUID botUUID;
             IBotManager manager = World.RequestModuleInterface<IBotManager>();
+            Vector3 startPos;
+            startPos.X = 128;
+            startPos.Y = 128;
+            startPos.Z = 23;
             if (manager != null)
             {
-                botUUID = manager.SpawnAttackBot(FirstName, LastName, m_host.ParentEntity.Scene, UUID.Parse(appearanceToClone), AvatarToFollowName);
+                
+                botUUID = manager.SpawnAttackBot(FirstName, LastName, m_host.ParentEntity.Scene, UUID.Parse(appearanceToClone), AvatarToFollowName, UUID.Parse(creatorID), startPos);
                 return botUUID.ToString();
             }
             return "";
         }
 
-        public string botCreateBot(string FirstName, string LastName, string appearanceToClone)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botCreateBot", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager>();
-            if (manager != null)
-                return manager.CreateAvatar(FirstName, LastName, m_host.ParentEntity.Scene, UUID.Parse(appearanceToClone)).ToString();
-            return "";
-        }
+        //looks like you need to get an appearance argument and build it up
+        //then pass it to this function
+        //public void botSetAppearanceAssets(UUID userID, ref AvatarAppearance appearance)
+        //{
 
-        public void botSetShouldFly (string keyOfBot, int ShouldFly)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botSetShouldFly", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
-            if (manager != null)
-               manager.SetBotShouldFly (UUID.Parse(keyOfBot), ShouldFly == 1);
-        }
+        //    IInventoryService invService = m_host.ParentEntity.Scene.InventoryService;
 
-        public void botSetMap(string keyOfBot, LSL_List positions, LSL_List movementType)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botSetMap", m_host, "bot");
-            List<Vector3> PositionsMap = new List<Vector3>();
-            for(int i = 0; i < positions.Length; i++)
-            {
-                LSL_Vector pos = positions.GetVector3Item(i);
-                PositionsMap.Add(new Vector3((float)pos.x, (float)pos.y, (float)pos.z));
-            }
-            List<TravelMode> TravelMap = new List<TravelMode>();
-            for(int i = 0; i < movementType.Length; i++)
-            {
-                LSL_Integer travel = movementType.GetLSLIntegerItem(i);
-                TravelMap.Add((TravelMode)travel.value);
-            }
+        //    for (int i = 0; i < AvatarWearable.MAX_WEARABLES; i++)
+        //    {
+        //        for (int j = 0; j < appearance.Wearables[j].Count; j++)
+        //        {
+        //            if (appearance.Wearables[i][j].ItemID == UUID.Zero)
+        //                continue;
 
-            IBotManager manager = World.RequestModuleInterface<IBotManager>();
-            if (manager != null)
-                manager.SetBotMap(UUID.Parse(keyOfBot), PositionsMap, TravelMap);
-        }
+        //            // Ignore ruth's assets
+        //            if (appearance.Wearables[i][j].ItemID == AvatarWearable.DefaultWearables[i][j].ItemID)
+        //            {
+        //                //m_log.ErrorFormat(
+        //                //    "[AvatarFactory]: Found an asset for the default avatar, itemID {0}, wearable {1}, asset {2}" +
+        //                //    ", setting to default asset {3}.",
+        //                //    appearance.Wearables[i][j].ItemID, (WearableType)i, appearance.Wearables[i][j].AssetID,
+        //                //    AvatarWearable.DefaultWearables[i][j].AssetID);
+        //                appearance.Wearables[i].Add(appearance.Wearables[i][j].ItemID, appearance.Wearables[i][j].AssetID);
+        //                continue;
+        //            }
 
-        public void botPause(string bot)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botPause", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager>();
-            if (manager != null)
-                manager.PauseAutoMove(UUID.Parse(bot));
-        }
+        //            InventoryItemBase baseItem = new InventoryItemBase(appearance.Wearables[i][j].ItemID, userID);
+        //            baseItem = invService.GetItem(baseItem);
 
-        public void botResume(string bot)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botResume", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager>();
-            if (manager != null)
-                manager.UnpauseAutoMove(UUID.Parse(bot));
-        }
+        //            if (baseItem != null)
+        //            {
+        //                appearance.Wearables[i].Add(appearance.Wearables[i][j].ItemID, baseItem.AssetID);
+        //            }
+        //            else
+        //            {
+        //                //m_log.ErrorFormat(
+        //                //    "[AvatarFactory]: Can't find inventory item {0} for {1}, setting to default",
+        //                //    appearance.Wearables[i][j].ItemID, (WearableType)i);
 
-        public void botStop(string bot)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botStop", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager>();
-            if (manager != null)
-                manager.StopAutoMove(UUID.Parse(bot));
-        }
+        //                appearance.Wearables[i].RemoveItem(appearance.Wearables[i][j].ItemID);
+        //                appearance.Wearables[i].Add(AvatarWearable.DefaultWearables[i][j].ItemID, AvatarWearable.DefaultWearables[i][j].AssetID);
+        //            }
+        //        }
+        //    }
 
-        public void botStart(string bot)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botStart", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager>();
-            if (manager != null)
-                manager.EnableAutoMove(UUID.Parse(bot));
-        }
 
-        public void botRemoveBot (string bot)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botRemoveBot", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
-            if (manager != null)
-                manager.RemoveAvatar (UUID.Parse (bot), m_host.ParentEntity.Scene);
-        }
+        //}
 
-        public void botFollowAvatar (string bot, string avatarName, LSL_Float followDistance)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botFollowAvatar", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
-            if (manager != null)
-                manager.FollowAvatar (UUID.Parse (bot), avatarName, (float)followDistance);
-        }
+        //public void botForceSendAvatarAppearance(UUID agentid)
+        //{
+        //    //If the avatar changes appearance, then proptly logs out, this will break!
+        //    IScenePresence sp = m_host.ParentEntity.Scene.GetScenePresence(agentid);
+        //    if (sp == null || sp.IsChildAgent)
+        //    {
+        //        //m_log.WarnFormat("[AvatarFactory]: Agent {0} no longer in the scene", agentid);
+        //        return;
+        //    }
 
-        public void botStopFollowAvatar (string bot)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botStopFollowAvatar", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
-            if (manager != null)
-                manager.StopFollowAvatar (UUID.Parse (bot));
-        }
+        //    //Force send!
+        //    IAvatarAppearanceModule appearance = sp.RequestModuleInterface<IAvatarAppearanceModule>();
+        //    sp.ControllingClient.SendWearables(appearance.Appearance.Wearables, appearance.Appearance.Serial);
+        //    appearance.SendAvatarDataToAllAgents();
 
-        public void botSetPathMap (string bot, string pathMap, int x, int y, int cornerstoneX, int cornerstoneY)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botSetPathMap", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
-            if (manager != null)
-                manager.ReadMap (UUID.Parse (bot), pathMap, x, y, cornerstoneX, cornerstoneY);
-        }
+        //    appearance.SendAppearanceToAgent(sp);
 
-        public void botFindPath (string bot, LSL_Vector startPos, LSL_Vector endPos)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botFindPath", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
-            if (manager != null)
-                manager.FindPath (UUID.Parse (bot), new Vector3 ((float)startPos.x, (float)startPos.y, (float)startPos.z),
-                    new Vector3 ((float)endPos.x, (float)endPos.y, (float)endPos.z));
-        }
+        //    appearance.SendAppearanceToAllOtherAgents();
+        //}
 
-        public void botSendChatMessage (string bot, string message, int channel, int sayType)
-        {
-            //ScriptProtection.CheckThreatLevel (ThreatLevel.Moderate, "botSendChatMessage", m_host, "bot");
-            IBotManager manager = World.RequestModuleInterface<IBotManager> ();
-            if (manager != null)
-                manager.SendChatMessage (UUID.Parse (bot), message, sayType, channel);
-//        Whisper = 0,
-        //Say = 1,
-        //Shout = 2,
-        //ObsoleteSay = 3, // 3 is an obsolete version of Say
-        //StartTyping = 4,
-        //StopTyping = 5,
-        //DebugChannel = 6,
-        //Region = 7,
-        //Owner = 8,
-        //Custom = 10,
-        //SayTo = 11,
-        //Broadcast = 0xFF
-        }
+
     }
 }
